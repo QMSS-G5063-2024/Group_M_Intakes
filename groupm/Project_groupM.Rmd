@@ -1,0 +1,243 @@
+---
+title: 'Project: Food and Nutrients Exploration'
+author: "Group M"
+date: "2024-04-21"
+output: html_document
+---
+
+
+# Part 1. Explore US dataset: 
+
+
+```{r}
+
+library(ggplot2)
+library(readr)
+#P1
+data <- read_csv("Total for categories 2015-2016 and 2017-2018.csv")
+
+data$Food_group <- factor(data$Foodgroup, levels = unique(data$Foodgroup))
+
+ggplot(data, aes(x = Food_group, y = Total, fill = Year)) +
+  geom_bar(stat = 'identity', position = 'dodge') +
+  theme_minimal() +
+  labs(title = 'Total for categories 2015-2016 and 2017-2018', x = 'Category', y = 'Total') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+
+This Graph shows the total quantities for various food categories over two different time periods (2015-2016 and 2017-2018), allowing for a direct comparison. The data can help examine the relationship between eating habits and health. If some less healthy food categories show an upward trend, it could indicate a potential risk to public health.
+
+
+```{r}
+
+library(ggplot2)
+library(readr)
+library(dplyr)
+library(gridExtra)
+library(scales)
+
+data <- read_csv("sugar intake proportion.csv")
+
+data <- data %>%
+  filter(Group != "Total") %>%
+  group_by(Year) %>%
+  mutate(Proportion = Value / sum(Value)) %>%
+  ungroup() %>%
+  mutate(Label = ifelse(Proportion > 0.1, percent(Proportion), ""))
+
+data_2015_2016 <- data %>% filter(Year == "2015-2016")
+data_2017_2018 <- data %>% filter(Year == "2017-2018")
+
+plot_pie <- function(data, title) {
+  ggplot(data, aes(x = "", y = Proportion, fill = Group)) +
+    geom_bar(stat = "identity", width = 1) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    labs(title = title, fill = "Source") +
+    geom_text(aes(label = Label), position = position_stack(vjust = 0.5), check_overlap = TRUE) +
+    theme(
+      legend.position = "bottom",  
+      legend.direction = "vertical",  
+      legend.key.width = unit(1, "cm"),  
+      legend.text = element_text(size = 10)  
+    )
+}
+
+
+p1 = plot_pie(data_2015_2016, "Sugar Intake Proportions 2015-2016")
+p2 = plot_pie(data_2017_2018, "Sugar Intake Proportions 2017-2018")
+
+grid.arrange(p1, p2, nrow = 1)
+
+
+
+```
+
+The two pie charts illustrate the proportions of sugar intake from different sources and compare the 2015-2016 and 2017-2018 periods.
+The "At home" segment is the largest, accounting for approximately 69.86%, indicating that most sugar intake occurs in home-based settings. Other sources (such as fast food, restaurants, etc.) hold smaller shares. 2017-2018 Pie Chart:
+The "At home" segment remains the largest, accounting for approximately 71.61%, indicating an increase in sugar intake from home-based sources. Other sources show slight changes but maintain relatively smaller proportions.
+
+
+```{r}
+
+library(ggplot2)
+library(readr)
+
+data <- read_csv("people_group_sugarintake.csv")
+
+data$Group <- factor(data$Group, levels = unique(data$Group))
+
+ggplot(data, aes(x = Group, y = Total, fill = Year)) +
+  geom_bar(stat = 'identity', position = position_dodge()) +
+  scale_fill_manual(values = c("2015-2016" = "blue", "2017-2018" = "orange")) +
+  theme_minimal() +
+  labs(x = "Group", y = "Total Sugar Intake (tsp)", title = "Total Sugar Intake by Group and Year") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+The bar graph comparing total sugar intake among different groups for two periods: 2015-2016 and 2017-2018. 
+It visualizes how sugar intake varies by group and year, with bars grouped by category and distinguished by color.
+In general, the bars for 2017-2018 (orange) are higher than those for 2015-2016 (blue), suggesting an increase in total sugar intake across most groups.
+
+
+```{r}
+data <- read_csv("peope_group_location_sugar.csv")
+
+data$Group <- factor(data$Group, levels = unique(data$Group))
+data$Location <- factor(data$Location, levels = c("At home", "Away from home"))
+
+ggplot(data, aes(x = Group, y = Total, fill = Location)) +
+  geom_bar(stat = 'identity', position = position_dodge()) +
+  scale_fill_manual(values = c("At home" = "blue", "Away from home" = "orange")) +
+  theme_minimal() +
+  labs(title = 'Comparative Sugar Intake by Group at Home vs. Away Across (2015-2016,2017-2018)',
+       x = 'Group',
+       y = 'Total Sugar Intake (tsp)',
+       fill = 'Location') +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+        plot.title = element_text(size = rel(1), hjust = 0.5),
+        legend.position = "bottom") +
+  facet_wrap(~Year, ncol = 1)
+
+data$Group <- factor(data$Group, levels = unique(data$Group))
+
+
+ggplot(data, aes(x = Group, y = Total, fill = Location)) +
+  geom_bar(stat = 'identity', position = position_dodge(width = 0.9), alpha = 0.7) +
+  scale_fill_manual(values = c("At home" = "blue", "Away from home" = "orange")) +
+  theme_minimal() +
+  labs(title = 'Comparative Sugar Intake by Group at Home vs. Away (2015-2016,2017-2018)',
+       x = 'Group',
+       y = 'Total Sugar Intake (tsp)',
+       fill = 'Location') +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+        plot.title = element_text(size = rel(1), hjust = 0.5),
+        legend.position = "bottom") +
+  facet_grid(. ~ Year)
+
+
+```
+
+
+The chart illustrates a comparison of sugar intake at home and away from home for different groups during two periods: 2015-2016 and 2017-2018. 
+For most groups, sugar intake at home is significantly higher than away from home, especially for adults and middle-income households. This suggests that home eating habits play an essential role in sugar intake.
+The bar chart allows you to compare different groups in terms of sugar intake at home and away from home.
+In both 2015-2016 and 2017-2018, "At home" generally has higher sugar intake than "Away from home," suggesting that home-based consumption contributes more to total sugar intake.
+Among the groups, "adult" and "middle-income households" have the highest total sugar intake, while "low-income households" and "elder" have lower values.
+The trend shows that from 2015-2016 to 2017-2018, sugar intake at home has generally increased, indicating a shift in dietary patterns or consumption behaviors.
+
+
+
+# Part 2. Explore global dataset: Supply Utilization Accounts Food and Diet 2010-2020
+```{r}
+df <- read.csv("Supply_Utilization_Accounts_Food_and_Diet_E_All_Data_(Normalized).csv")
+```
+
+```{r}
+library(shiny)
+library(DT)
+library(dplyr)
+library(shinyWidgets)
+library(ggplot2)
+library(plotly)
+```
+```{r}
+df <- df[, c("Area", "Food.Group","Indicator", "Year", "Unit", "Value")]
+```
+
+## Multiple Search by Countries
+```{r}
+nutrients <- unique(df$Indicator)
+foodgroups <- unique(df$Food.Group)
+
+ui <- fluidPage(
+  titlePanel("Average Daily Nutrient Availability by Country"),
+  sidebarLayout(
+    sidebarPanel(
+      selectizeInput("nutrient", "Select Nutrient", choices = nutrients, multiple = FALSE),
+      selectizeInput("foodgroup", "Select Food Group", choices = foodgroups, multiple = FALSE),
+      sliderInput("year_range", "Select Year Range", min = 2010, max = 2020, value = c(2010,2020),step = 1),
+      textAreaInput("countries", "Enter countries (one per line):", value = "", width = "400px", height = "200px"),
+      actionButton("submit", "Submit")
+    ),
+    mainPanel(
+      DTOutput("filtered_table"),
+      plotlyOutput("line_plot")
+    )
+  )
+)
+
+```
+
+```{r}
+years <- c(2010, 2012, 2014, 2016, 2018, 2020)
+```
+
+```{r}
+server <- function(input, output) {
+  
+  filtered_data <- reactive({
+    countries <- unlist(strsplit(input$countries, "\n"))
+    filtered <- df[df$Area %in% countries, ]
+    
+    if (!is.null(input$year_range)) {
+      filtered <- filtered %>%
+        filter(Year >= input$year_range[1] & Year <= input$year_range[2])
+    }
+    
+    if (!is.null(input$nutrient)) {
+      filtered <- filtered %>%
+        filter(Indicator %in% input$nutrient)
+    }
+    
+    if (!is.null(input$foodgroup)) {
+      filtered <- filtered %>%
+        filter(Food.Group %in% input$foodgroup)
+    }
+    
+    return(filtered)
+  })
+  
+  output$filtered_table <- renderDT({
+    datatable(filtered_data(), options = list(pageLength = 10))
+  })
+  
+  output$line_plot <- renderPlotly({
+    plot <- ggplot(filtered_data(), aes(x = Year, y = Value, color = Area)) +
+      geom_line() +
+      labs(x = "time", y = "value", title = "Average Daily Nutrient Availability Trend") +
+      theme_minimal()+
+      scale_x_continuous(breaks = years)
+    ggplotly(plot)
+  })
+  
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+

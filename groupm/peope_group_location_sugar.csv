@@ -1,0 +1,25 @@
+Group,Year,Location,Total
+youth,2015-2016,At home,10.33
+adult,2015-2016,At home,12.05
+ elder,2015-2016,At home,10.00
+ low-income households,2015-2016,At home,11.97
+      Middle-income households,2015-2016,At home,11.56
+      high-income households,2015-2016,At home,10.56
+youth,2017-2018,At home,11.15
+adult,2017-2018,At home,12.68
+ elder,2017-2018,At home,11.49
+ low-income households,2017-2018,At home,13.16
+      Middle-income households,2017-2018,At home,14.41
+      high-income households,2017-2018,At home,10.33
+youth,2015-2016,Away from home,5.72
+adult,2015-2016,Away from home,5.13
+ elder,2015-2016,Away from home,2.73
+ low-income households,2015-2016,Away from home,4.47
+      Middle-income households,2015-2016,Away from home,5.45
+      high-income households,2015-2016,Away from home,5.04
+youth,2017-2018,Away from home,5.40
+adult,2017-2018,Away from home,5.07
+ elder,2017-2018,Away from home,2.87
+ low-income households,2017-2018,Away from home,4.54
+      Middle-income households,2017-2018,Away from home,4.53
+      high-income households,2017-2018,Away from home,5.16
