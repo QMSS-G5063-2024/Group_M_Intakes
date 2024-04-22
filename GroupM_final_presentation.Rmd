@@ -1,0 +1,306 @@
+---
+title: 'Final Project: Food and Nutrients Exploration'
+author: "Group M: Xinyao Huang, Jiayi Song, Rou Xie, Juanyu Liu"
+date: "2024-04-21"
+output: ioslides_presentation
+runtime: shiny
+---
+
+
+## Data Sources:
+
+- **Supply Utilization Accounts Food and Diet 2010-2020**  
+  Data from the Food and Agriculture Organization (FAO).  
+  [FAO Stat Data](https://www.fao.org/faostat/en/#data/SUA)
+
+- **National Health and Nutrition Examination Survey (NHANES) 2015-2016**  
+  Data sourced from the Global Dietary Database.  
+  [Global Dietary Database NHANES](https://www.globaldietarydatabase.org/management/microdata-surveys/718)
+
+- **Food Consumption and Nutrient Intakes 2015-2018**  
+  Data obtained from the USDA Economic Research Service.  
+  [USDA ERS - Food Consumption and Nutrient Intakes](https://www.ers.usda.gov/data-products/food-consumption-and-nutrient-intakes/)
+
+
+# Part 1. Explore US dataset
+
+## Food Consumption and Nutrient Intakes
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(readr)
+#P1
+data <- read_csv("Total for categories 2015-2016 and 2017-2018.csv")
+
+data$Food_group <- factor(data$Foodgroup, levels = unique(data$Foodgroup))
+
+ggplot(data, aes(x = Food_group, y = Total, fill = Year)) +
+  geom_bar(stat = 'identity', position = 'dodge') +
+  theme_minimal() +
+  labs(title = 'Total for categories 2015-2016 and 2017-2018', x = 'Category', y = 'Total') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Sugar Intake Proportion
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(readr)
+library(dplyr)
+library(gridExtra)
+library(scales)
+
+data <- read_csv("sugar intake proportion.csv")
+
+data <- data %>%
+  filter(Group != "Total") %>%
+  group_by(Year) %>%
+  mutate(Proportion = Value / sum(Value)) %>%
+  ungroup() %>%
+  mutate(Label = ifelse(Proportion > 0.1, percent(Proportion), ""))
+
+data_2015_2016 <- data %>% filter(Year == "2015-2016")
+data_2017_2018 <- data %>% filter(Year == "2017-2018")
+
+plot_pie <- function(data, title) {
+  ggplot(data, aes(x = "", y = Proportion, fill = Group)) +
+    geom_bar(stat = "identity", width = 1) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    labs(title = title, fill = "Source") +
+    geom_text(aes(label = Label), position = position_stack(vjust = 0.5), check_overlap = TRUE) +
+    theme(
+      legend.position = "bottom",  
+      legend.direction = "vertical",  
+      legend.key.width = unit(1, "cm"),  
+      legend.text = element_text(size = 10)  
+    )
+}
+
+
+p1 = plot_pie(data_2015_2016, "Sugar Intake Proportions 2015-2016")
+p2 = plot_pie(data_2017_2018, "Sugar Intake Proportions 2017-2018")
+
+grid.arrange(p1, p2, nrow = 1)
+
+
+
+```
+
+
+## Comparison by groups
+```{r, echo = FALSE,message=FALSE, warning=FALSE}
+
+library(ggplot2)
+library(readr)
+
+data <- read_csv("people_group_sugarintake.csv")
+
+data$Group <- factor(data$Group, levels = unique(data$Group))
+
+ggplot(data, aes(x = Group, y = Total, fill = Year)) +
+  geom_bar(stat = 'identity', position = position_dodge()) +
+  scale_fill_manual(values = c("2015-2016" = "blue", "2017-2018" = "orange")) +
+  theme_minimal() +
+  labs(x = "Group", y = "Total Sugar Intake (tsp)", title = "Total Sugar Intake by Group and Year") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+
+## Home vs. Away 
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+data <- read_csv("peope_group_location_sugar.csv")
+
+data$Group <- factor(data$Group, levels = unique(data$Group))
+data$Location <- factor(data$Location, levels = c("At home", "Away from home"))
+
+# ggplot(data, aes(x = Group, y = Total, fill = Location)) +
+#   geom_bar(stat = 'identity', position = position_dodge()) +
+#   scale_fill_manual(values = c("At home" = "blue", "Away from home" = "orange")) +
+#   theme_minimal() +
+#   labs(title = 'Comparative Sugar Intake by Group at Home vs. Away Across (2015-2016,2017-2018)',
+#        x = 'Group',
+#        y = 'Total Sugar Intake (tsp)',
+#        fill = 'Location') +
+#   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+#         plot.title = element_text(size = rel(1), hjust = 0.5),
+#         legend.position = "bottom") +
+#   facet_wrap(~Year, ncol = 1)
+
+data$Group <- factor(data$Group, levels = unique(data$Group))
+
+
+ggplot(data, aes(x = Group, y = Total, fill = Location)) +
+  geom_bar(stat = 'identity', position = position_dodge(width = 0.9), alpha = 0.7) +
+  scale_fill_manual(values = c("At home" = "blue", "Away from home" = "orange")) +
+  theme_minimal() +
+  labs(title = 'Comparative Sugar Intake by Group at Home vs. Away (2015-2016,2017-2018)',
+       x = 'Group',
+       y = 'Total Sugar Intake (tsp)',
+       fill = 'Location') +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+        plot.title = element_text(size = rel(1), hjust = 0.5),
+        legend.position = "bottom") +
+  facet_grid(. ~ Year)
+
+
+```
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse) 
+library(dplyr)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+diet_data_part1 <- read.csv("DietData_part1.csv")
+diet_data_part2 <- read.csv("DietData_part2.csv")
+participant_data <- read.csv("ParticipantData.csv")
+diet_data <- bind_rows(diet_data_part1, diet_data_part2)
+combined_data <- inner_join(diet_data, participant_data, by = "id")
+
+#Clean data
+combined_data <- combined_data %>%
+  filter(!is.na(totalsugars), !is.na(pa), !is.na(age.x), !is.na(sex.x))
+
+#Add labels
+race_labels <- c("Mexican American", "Other Hispanic", "White", "Black", "Asian", "Other Race")
+sex_labels <- c("Male", "Female")
+combined_data$race_label <- race_labels[combined_data$race]
+combined_data$sex_label <- sex_labels[combined_data$sex.x]
+```
+
+## Sugar & Race
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Total Sugar Intake divide by race
+avg_sugar_by_race <- combined_data %>%
+  group_by(race) %>%
+  summarize(avg_sugar = mean(totalsugars, na.rm = TRUE))
+
+# Line Chart
+ggplot(avg_sugar_by_race, aes(x = race, y = avg_sugar, fill = race_labels)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Sugar Intake by Race", x = "Race", y = "Average Sugar Intake (g)") +
+  scale_fill_discrete(name = "Race", labels = race_labels) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+## Scatter plot
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# A scatter plot shows the relationship between sugar intake and physical activity
+ggplot(combined_data, aes(x = totalsugars, y = pa)) +
+  geom_point(aes(color = race_label), alpha = 0.6) +
+  geom_smooth(method = "lm", color = "blue") +
+  labs(title = "Sugar Intake vs Physical Activity", x = "Total Sugar Intake (g)", y = "Physical Activity (MET-min/week)") +
+  theme_minimal()
+```
+
+
+## Analyze Total sugar intake and Sex
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+avg_sugar_by_sex <- combined_data %>%
+  group_by(sex.x) %>%
+  summarize(avg_sugar = mean(totalsugars, na.rm = TRUE))
+
+# ggplot(avg_sugar_by_sex, aes(x = sex.x, y = avg_sugar, fill = sex_labels)) +
+#   geom_bar(stat = "identity") +
+#   labs(title = "Average Sugar Intake by Male and female", x = "Sex", y = "Average Sugar Intake (g)") +
+#   scale_fill_discrete(name = "Sex", labels = sex_labels) +
+#   theme_minimal() +
+#   theme(legend.position = "bottom")
+
+ggplot(combined_data, aes(x = totalsugars, y = pa)) +
+  geom_point(aes(color = sex_label), alpha = 0.6) +
+  geom_smooth(method = "lm", color = "blue") +
+  labs(title = "Sugar Intake vs Physical Activity", x = "Total Sugar Intake (g)", y = "Physical Activity (MET-min/week)") +
+  theme_minimal()
+```
+
+
+# Part 2. Explore global dataset: Supply Utilization Accounts Food and Diet 2010-2020
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+df <- read.csv("Supply_Utilization_Accounts_Food_and_Diet_E_All_Data_(Normalized).csv", fileEncoding = "ISO-8859-1")
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(shiny)
+library(DT)
+library(dplyr)
+library(shinyWidgets)
+library(ggplot2)
+library(plotly)
+```
+```{r, echo = FALSE}
+df <- df[, c("Area", "Food.Group","Indicator", "Year", "Unit", "Value")]
+```
+
+## Multiple Search by Countries
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+nutrients <- unique(df$Indicator)
+foodgroups <- unique(df$Food.Group)
+
+ui <- fluidPage(
+  titlePanel("Average Daily Nutrient Availability by Country"),
+  sidebarLayout(
+    sidebarPanel(
+      selectizeInput("nutrient", "Select Nutrient", choices = nutrients, multiple = FALSE),
+      selectizeInput("foodgroup", "Select Food Group", choices = foodgroups, multiple = FALSE),
+      sliderInput("year_range", "Select Year Range", min = 2010, max = 2020, value = c(2010,2020),step = 1),
+      textAreaInput("countries", "Enter countries (one per line):", value = "", width = "400px", height = "200px"),
+      actionButton("submit", "Submit")
+    ),
+    mainPanel(
+      DTOutput("filtered_table"),
+      plotlyOutput("line_plot")
+    )
+  )
+)
+years <- c(2010, 2012, 2014, 2016, 2018, 2020)
+```
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+server <- function(input, output) {
+  
+  filtered_data <- reactive({
+    countries <- unlist(strsplit(input$countries, "\n"))
+    filtered <- df[df$Area %in% countries, ]
+    
+    if (!is.null(input$year_range)) {
+      filtered <- filtered %>%
+        filter(Year >= input$year_range[1] & Year <= input$year_range[2])
+    }
+    
+    if (!is.null(input$nutrient)) {
+      filtered <- filtered %>%
+        filter(Indicator %in% input$nutrient)
+    }
+    
+    if (!is.null(input$foodgroup)) {
+      filtered <- filtered %>%
+        filter(Food.Group %in% input$foodgroup)
+    }
+    
+    return(filtered)
+  })
+  
+  output$filtered_table <- renderDT({
+    datatable(filtered_data(), options = list(pageLength = 10))
+  })
+  
+  output$line_plot <- renderPlotly({
+    plot <- ggplot(filtered_data(), aes(x = Year, y = Value, color = Area)) +
+      geom_line() +
+      labs(x = "time", y = "value", title = "Average Daily Nutrient Availability Trend") +
+      theme_minimal()+
+      scale_x_continuous(breaks = years)
+    ggplotly(plot)
+  })
+  
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+
