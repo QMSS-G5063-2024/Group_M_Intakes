@@ -5,3 +5,5 @@ Xinyao Huang xh2612@columbia.edu  <br>
 Jiayi Song js6367@columbia.edu  <br>
 Juanyu Liu jl6576@columbia.edu  <br>
 Rou Xie rx2228@columbia.edu  <br>
+
+HTML version: https://xinyaohuang.shinyapps.io/groupm_final_presentation/
